@@ -490,6 +490,11 @@ struct QxFees_output
     uint32_t assetIssuanceFee; // Amount of qus
     uint32_t transferFee; // Amount of qus
     uint32_t tradeFee; // Number of billionths
+
+    static constexpr unsigned char type()
+    {
+        return RespondContractFunction::type();
+    }    
 };
 struct GetSendToManyV1Fee_output
 {
@@ -519,6 +524,11 @@ typedef struct
     unsigned int tick;
     uint8_t publicKeys[NUMBER_OF_COMPUTORS][32];
     long long prices[NUMBER_OF_COMPUTORS];
+
+    static constexpr unsigned char type()
+    {
+        return RESPOND_CONTRACT_IPO;
+    }
 } RespondContractIPO;
 
 struct SpecialCommandToggleMainModeResquestAndResponse
