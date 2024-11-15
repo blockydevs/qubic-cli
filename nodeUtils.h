@@ -4,7 +4,7 @@ void printTickInfoFromNode(const char* nodeIp, int nodePort);
 void printSystemInfoFromNode(const char* nodeIp, int nodePort);
 uint32_t getTickNumberFromNode(QCPtr qc);
 bool checkTxOnTick(const char* nodeIp, const int nodePort, const char* txHash, uint32_t requestedTick);
-void downloadFile(const char* nodeIp, const int nodePort, const char* trailer, const char* outFilePath);
+void downloadFile(const char* nodeIp, const int nodePort, const char* trailer, const char* outFilePath, const char* compressTool = nullptr);
 int _GetInputDataFromTxHash(QCPtr& qc, const char* txHash, uint8_t* outData, int& dataSize);
 int _GetTxInfo(QCPtr& qc, const char* txHash);
 int getTxInfo(const char* nodeIp, const int nodePort, const char* txHash);
@@ -21,7 +21,7 @@ void dumpSpectrumToCSV(const char* input, const char* output);
 void dumpUniverseToCSV(const char* input, const char* output);
 void sendSpecialCommandGetMiningScoreRanking(const char* nodeIp, const int nodePort, const char* seed, int command);
 void getVoteCounterTransaction(const char* nodeIp, const int nodePort, unsigned int requestedTick, const char* compFileName);
-void uploadFile(const char* nodeIp, const int nodePort, const char* filePath, const char* seed, unsigned int tickOffset);
+void uploadFile(const char* nodeIp, const int nodePort, const char* filePath, const char* seed, unsigned int tickOffset, const char* compressTool = nullptr);
 // remote tools:
 void toogleMainAux(const char* nodeIp, const int nodePort, const char* seed,
                    int command, std::string mode0, std::string mode1);
