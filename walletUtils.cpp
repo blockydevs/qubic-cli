@@ -28,10 +28,30 @@ void printWalletInfo(const char* seed)
 
     getIdentityFromPublicKey(privateKey, privateKeyQubicFormat, true);
     getIdentityFromPublicKey(publicKey, publicKeyQubicFormat, true);
-    LOG("Seed: %s\n", seed);
-    LOG("Private key: %s\n", privateKeyQubicFormat);
-    LOG("Public key: %s\n", publicKeyQubicFormat);
-    LOG("Identity: %s\n", publicIdentity);
+    printf("Seed: %s\n", seed);
+
+    printf("Sub Seed: ");
+    for (int i = 0; i < 32; i++){
+        printf("%02X", subseed[i]);
+    }
+    printf("\n");
+
+    printf("Public key raw:");
+    for (int i = 0; i < 32; i++){
+      printf("%02X", publicKey[i]);
+    }
+	printf("\n");
+
+    printf("Private key raw:");
+    for (int i = 0; i < 32; i++){
+      printf("%02X", privateKey[i]);
+    }
+	printf("\n");
+
+
+    printf("Private key: %s\n", privateKeyQubicFormat);
+    printf("Public key: %s\n", publicKeyQubicFormat);
+    printf("Identity: %s\n", publicIdentity);
 }
 
 RespondedEntity getBalance(const char* nodeIp, const int nodePort, const uint8_t* publicKey)

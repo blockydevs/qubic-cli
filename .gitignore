@@ -2,4 +2,6 @@
 build/
 # geany editor
 *geany
-
+.idea/
+cmake-build-debug/
+.DS_Store
