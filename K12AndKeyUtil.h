@@ -2258,11 +2258,22 @@ VOID_FUNC_DECL signWithNonceK(const unsigned char* k, const unsigned char* publi
     point_t R;
     unsigned char h[64] , temp[32 + 64];
     unsigned long long r[8];
+    // unsigned char r[64];
+    printf("r size: %lu\n", sizeof(r));
 
     *((__m256i*)(temp + 32)) = *((__m256i*)(k + 32));
     *((__m256i*)(temp + 64)) = *((__m256i*)messageDigest);
 
+    printf("[signWithNonceK] temp + 32: %hhu \n", temp[32]);
+    printf("[signWithNonceK] temp + 64: %hhu \n", temp[64]);
+
     KangarooTwelve(temp + 32, 32 + 32, (unsigned char*)r, 64);
+
+    printf("[signWithNonceK] r: ");
+    unsigned char rt[64];
+    memcpy(rt, r, 64);
+    for (int i = 0; i < 64; i++) printf("%02X", rt[i]);
+    printf("\n");
 
     ecc_mul_fixed(r, R);
     encode(R, signature); // Encode lowest 32 bytes of signature
@@ -2292,6 +2303,10 @@ VOID_FUNC_DECL sign(const unsigned char* subseed, const unsigned char* publicKey
     // Output: 64-byte signature
     unsigned char k[64];
     KangarooTwelve((unsigned char*)subseed, 32, k, 64);
+    printf("[sign] k: ");
+    for (int i = 0; i < 64; i++) printf("%02X", k[i]);
+    printf("\n");
+
     signWithNonceK(k, publicKey, messageDigest, signature);
 }
 

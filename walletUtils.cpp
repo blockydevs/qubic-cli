@@ -14,11 +14,11 @@
 
 void printWalletInfo(const char* seed)
 {
-	uint8_t privateKey[32] = {0};
-	uint8_t publicKey[32] = {0};
+    uint8_t privateKey[32] = {0};
+    uint8_t publicKey[32] = {0};
     uint8_t subseed[32] = {0};
-	char privateKeyQubicFormat[128] = {0};
-	char publicKeyQubicFormat[128] = {0};
+    char privateKeyQubicFormat[128] = {0};
+    char publicKeyQubicFormat[128] = {0};
     char publicIdentity[128] = {0};
     getSubseedFromSeed((uint8_t*)seed, subseed);
     getPrivateKeyFromSubSeed(subseed, privateKey);
@@ -31,27 +31,50 @@ void printWalletInfo(const char* seed)
     printf("Seed: %s\n", seed);
 
     printf("Sub Seed: ");
-    for (int i = 0; i < 32; i++){
+    for (int i = 0; i < 32; i++)
+    {
         printf("%02X", subseed[i]);
     }
     printf("\n");
 
     printf("Public key raw:");
-    for (int i = 0; i < 32; i++){
-      printf("%02X", publicKey[i]);
+    for (int i = 0; i < 32; i++)
+    {
+        printf("%02X", publicKey[i]);
     }
-	printf("\n");
+    printf("\n");
 
     printf("Private key raw:");
-    for (int i = 0; i < 32; i++){
-      printf("%02X", privateKey[i]);
+    for (int i = 0; i < 32; i++)
+    {
+        printf("%02X", privateKey[i]);
     }
-	printf("\n");
+    printf("\n");
 
 
     printf("Private key: %s\n", privateKeyQubicFormat);
     printf("Public key: %s\n", publicKeyQubicFormat);
     printf("Identity: %s\n", publicIdentity);
+
+
+    //test sign
+
+
+    uint8_t message[] = "Hello World!";
+    uint8_t signature[64] = {0};
+
+    uint8_t digest[32] = {0};
+
+    KangarooTwelve(message,sizeof(message),digest,32);
+    sign(subseed, publicKey, digest, signature);
+    printf("Signature:");
+    for (int i = 0; i < 64; i++)
+    {
+        printf("%02X", signature[i]);
+    }
+    printf("\n");
+
+
 }
 
 RespondedEntity getBalance(const char* nodeIp, const int nodePort, const uint8_t* publicKey)
@@ -62,7 +85,8 @@ RespondedEntity getBalance(const char* nodeIp, const int nodePort, const uint8_t
     buffer.resize(0);
     uint8_t tmp[1024] = {0};
     auto qc = make_qc(nodeIp, nodePort);
-    struct {
+    struct
+    {
         RequestResponseHeader header;
         RequestedEntity req;
     } packet;
@@ -70,7 +94,7 @@ RespondedEntity getBalance(const char* nodeIp, const int nodePort, const uint8_t
     packet.header.randomizeDejavu();
     packet.header.setType(REQUEST_ENTITY);
     memcpy(packet.req.publicKey, publicKey, 32);
-    qc->sendData((uint8_t *) &packet, packet.header.size());
+    qc->sendData((uint8_t*)&packet, packet.header.size());
     int recvByte = qc->receiveData(tmp, 1024);
     while (recvByte > 0)
     {
@@ -83,13 +107,13 @@ RespondedEntity getBalance(const char* nodeIp, const int nodePort, const uint8_t
     int ptr = 0;
     while (ptr < recvByte)
     {
-        auto header = (RequestResponseHeader*)(data+ptr);
+        auto header = (RequestResponseHeader*)(data + ptr);
         if (header->type() == RESPOND_ENTITY)
         {
             auto entity = (RespondedEntity*)(data + ptr + sizeof(RequestResponseHeader));
             result = *entity;
         }
-        ptr+= header->size();
+        ptr += header->size();
     }
 
     return result;
@@ -106,7 +130,7 @@ void getSpectrumDigest(RespondedEntity& respondedEntity, uint8_t* spectrumDigest
     }
 
     // Compute the root hash from the entity and siblings
-    if (respondedEntity.spectrumIndex < 0 )
+    if (respondedEntity.spectrumIndex < 0)
     {
         LOG("Spectrum index is invalid: %d\n", respondedEntity.spectrumIndex);
         return;
@@ -167,7 +191,7 @@ void printReceipt(Transaction& tx, const char* txHash = nullptr, const uint8_t* 
     LOG("Extra data size: %u\n", tx.inputSize);
     if (extraData != nullptr && tx.inputSize)
     {
-        char hex_tring[1024*2+1] = {0};
+        char hex_tring[1024 * 2 + 1] = {0};
         for (int i = 0; i < tx.inputSize; i++)
             sprintf(hex_tring + i * 2, "%02x", extraData[i]);
 
@@ -200,8 +224,8 @@ bool verifyTx(Transaction& tx, const uint8_t* extraData, const uint8_t* signatur
 }
 
 void makeStandardTransactionInTick(const char* nodeIp, int nodePort, const char* seed,
-                             const char* targetIdentity, const uint64_t amount, uint32_t txTick,
-                             int waitUntilFinish)
+                                   const char* targetIdentity, const uint64_t amount, uint32_t txTick,
+                                   int waitUntilFinish)
 {
     auto qc = make_qc(nodeIp, nodePort);
     uint8_t privateKey[32] = {0};
@@ -218,7 +242,8 @@ void makeStandardTransactionInTick(const char* nodeIp, int nodePort, const char*
     const bool isLowerCase = false;
     getIdentityFromPublicKey(sourcePublicKey, publicIdentity, isLowerCase);
     getPublicKeyFromIdentity(targetIdentity, destPublicKey);
-    struct {
+    struct
+    {
         RequestResponseHeader header;
         Transaction transaction;
         unsigned char signature[64];
@@ -234,12 +259,22 @@ void makeStandardTransactionInTick(const char* nodeIp, int nodePort, const char*
                    sizeof(packet.transaction),
                    digest,
                    32);
+
     sign(subseed, sourcePublicKey, digest, signature);
+    //Print digest as hex string
+    printf("Digest: ");
+    for (int i = 0; i < 32; i++) printf("%02X", digest[i]);
+    printf("\n");
+
+    printf("Signature: ");
+    for (int i = 0; i < 64; i++) printf("%02X", signature[i]);
+    printf("\n");
+
     memcpy(packet.signature, signature, 64);
-    packet.header.setSize(sizeof(packet.header)+sizeof(packet.transaction) + 64);
+    packet.header.setSize(sizeof(packet.header) + sizeof(packet.transaction) + 64);
     packet.header.zeroDejavu();
     packet.header.setType(BROADCAST_TRANSACTION);
-    qc->sendData((uint8_t *) &packet, packet.header.size());
+    qc->sendData((uint8_t*)&packet, packet.header.size());
 
     KangarooTwelve((unsigned char*)&packet.transaction,
                    sizeof(packet.transaction) + 64,
@@ -273,7 +308,7 @@ void makeStandardTransaction(const char* nodeIp, int nodePort, const char* seed,
     auto qc = make_qc(nodeIp, nodePort);
     uint32_t currentTick = getTickNumberFromNode(qc);
     uint32_t txTick = currentTick + scheduledTickOffset;
-    makeStandardTransactionInTick(nodeIp, nodePort, seed, targetIdentity, amount, txTick, waitUntilFinish); 
+    makeStandardTransactionInTick(nodeIp, nodePort, seed, targetIdentity, amount, txTick, waitUntilFinish);
 }
 
 void makeCustomTransaction(const char* nodeIp, int nodePort,
@@ -300,7 +335,8 @@ void makeCustomTransaction(const char* nodeIp, int nodePort,
     const bool isLowerCase = false;
     getIdentityFromPublicKey(sourcePublicKey, publicIdentity, isLowerCase);
     getPublicKeyFromIdentity(targetIdentity, destPublicKey);
-    struct {
+    struct
+    {
         RequestResponseHeader header;
         Transaction transaction;
     } temp_packet;
@@ -322,7 +358,8 @@ void makeCustomTransaction(const char* nodeIp, int nodePort,
                    digest,
                    32);
     sign(subseed, sourcePublicKey, digest, signature);
-    memcpy(packet.data() + sizeof(RequestResponseHeader) + sizeof(Transaction) + extraDataSize, signature, SIGNATURE_SIZE);
+    memcpy(packet.data() + sizeof(RequestResponseHeader) + sizeof(Transaction) + extraDataSize, signature,
+           SIGNATURE_SIZE);
     temp_packet.header.setSize(sizeof(RequestResponseHeader) + sizeof(Transaction) + extraDataSize + SIGNATURE_SIZE);
     temp_packet.header.zeroDejavu();
     temp_packet.header.setType(BROADCAST_TRANSACTION);
@@ -341,24 +378,24 @@ void makeCustomTransaction(const char* nodeIp, int nodePort,
 }
 
 void makeContractTransaction(const char* nodeIp, int nodePort,
-    const char* seed,
-    uint64_t contractIndex,
-    uint16_t txType,
-    uint64_t amount,
-    int extraDataSize,
-    const uint8_t* extraData,
-    uint32_t scheduledTickOffset)
+                             const char* seed,
+                             uint64_t contractIndex,
+                             uint16_t txType,
+                             uint64_t amount,
+                             int extraDataSize,
+                             const uint8_t* extraData,
+                             uint32_t scheduledTickOffset)
 {
     auto qc = make_qc(nodeIp, nodePort);
 
-    uint8_t privateKey[32] = { 0 };
-    uint8_t sourcePublicKey[32] = { 0 };
-    uint64_t destPublicKey[4] = { contractIndex, 0, 0, 0 };
-    uint8_t subseed[32] = { 0 };
-    uint8_t digest[32] = { 0 };
-    uint8_t signature[64] = { 0 };
-    char publicIdentity[128] = { 0 };
-    char txHash[128] = { 0 };
+    uint8_t privateKey[32] = {0};
+    uint8_t sourcePublicKey[32] = {0};
+    uint64_t destPublicKey[4] = {contractIndex, 0, 0, 0};
+    uint8_t subseed[32] = {0};
+    uint8_t digest[32] = {0};
+    uint8_t signature[64] = {0};
+    char publicIdentity[128] = {0};
+    char txHash[128] = {0};
     getSubseedFromSeed((uint8_t*)seed, subseed);
     getPrivateKeyFromSubSeed(subseed, privateKey);
     getPublicKeyFromPrivateKey(privateKey, sourcePublicKey);
@@ -383,17 +420,17 @@ void makeContractTransaction(const char* nodeIp, int nodePort,
     memcpy(packetInputData, extraData, extraDataSize);
 
     KangarooTwelve(packet.data() + sizeof(RequestResponseHeader),
-        sizeof(Transaction) + extraDataSize,
-        digest,
-        32);
+                   sizeof(Transaction) + extraDataSize,
+                   digest,
+                   32);
     sign(subseed, sourcePublicKey, digest, packetSignature);
 
     qc->sendData(packet.data(), packet.size());
 
     KangarooTwelve(packet.data() + sizeof(RequestResponseHeader),
-        sizeof(Transaction) + extraDataSize + 64,
-        digest,
-        32); // recompute digest for txhash
+                   sizeof(Transaction) + extraDataSize + 64,
+                   digest,
+                   32); // recompute digest for txhash
     getTxHashFromDigest(digest, txHash);
     LOG("Transaction has been sent!\n");
     printReceipt(packetTransaction, txHash, extraData);
@@ -402,19 +439,21 @@ void makeContractTransaction(const char* nodeIp, int nodePort,
 }
 
 bool runContractFunction(const char* nodeIp, int nodePort,
-    unsigned int contractIndex,
-    unsigned short funcNumber,
-    void* inputPtr,
-    size_t inputSize,
-    void* outputPtr,
-    size_t outputSize,
-    QCPtr* qcPtr = nullptr)
+                         unsigned int contractIndex,
+                         unsigned short funcNumber,
+                         void* inputPtr,
+                         size_t inputSize,
+                         void* outputPtr,
+                         size_t outputSize,
+                         QCPtr* qcPtr = nullptr)
 {
     QCPtr qc = (!qcPtr) ? make_qc(nodeIp, nodePort) : *qcPtr;
     std::vector<uint8_t> packet(sizeof(RequestResponseHeader) + sizeof(RequestContractFunction) + inputSize);
     RequestResponseHeader& packetHeader = (RequestResponseHeader&)packet[0];
     RequestContractFunction& packetRcf = (RequestContractFunction&)packet[sizeof(RequestResponseHeader)];
-    uint8_t* packetInputData = (inputSize) ? &packet[sizeof(RequestResponseHeader) + sizeof(RequestContractFunction)] : nullptr;
+    uint8_t* packetInputData = (inputSize)
+                                   ? &packet[sizeof(RequestResponseHeader) + sizeof(RequestContractFunction)]
+                                   : nullptr;
 
     packetHeader.setSize(packet.size());
     packetHeader.randomizeDejavu();
@@ -430,13 +469,13 @@ bool runContractFunction(const char* nodeIp, int nodePort,
     int recvByte = qc->receiveDataBig(buffer.data(), buffer.size());
 
     auto header = (RequestResponseHeader*)buffer.data();
-    if (header->type() == RespondContractFunction::type() && 
+    if (header->type() == RespondContractFunction::type() &&
         recvByte - sizeof(RequestResponseHeader) == outputSize)
     {
         memcpy(outputPtr, (buffer.data() + sizeof(RequestResponseHeader)), outputSize);
         return true;
     }
-    
+
     return false;
 }
 
@@ -469,7 +508,8 @@ void makeIPOBid(const char* nodeIp, int nodePort,
     ((uint64_t*)destPublicKey)[2] = 0;
     ((uint64_t*)destPublicKey)[3] = 0;
 
-    struct {
+    struct
+    {
         RequestResponseHeader header;
         Transaction transaction;
         ContractIPOBid ipo;
@@ -493,7 +533,7 @@ void makeIPOBid(const char* nodeIp, int nodePort,
     packet.header.setSize(sizeof(packet));
     packet.header.zeroDejavu();
     packet.header.setType(BROADCAST_TRANSACTION);
-    qc->sendData((uint8_t *) &packet, packet.header.size());
+    qc->sendData((uint8_t*)&packet, packet.header.size());
     KangarooTwelve((unsigned char*)&packet.transaction,
                    sizeof(packet.transaction) + sizeof(packet.ipo) + SIGNATURE_SIZE,
                    digest,
@@ -509,7 +549,8 @@ RespondContractIPO _getIPOStatus(const char* nodeIp, int nodePort, uint32_t cont
 {
     RespondContractIPO result;
     auto qc = make_qc(nodeIp, nodePort);
-    struct {
+    struct
+    {
         RequestResponseHeader header;
         RequestContractIPO req;
     } packet;
@@ -517,7 +558,7 @@ RespondContractIPO _getIPOStatus(const char* nodeIp, int nodePort, uint32_t cont
     packet.header.randomizeDejavu();
     packet.header.setType(REQUEST_CONTRACT_IPO);
     packet.req.contractIndex = contractIndex;
-    qc->sendData((uint8_t *) &packet, packet.header.size());
+    qc->sendData((uint8_t*)&packet, packet.header.size());
 
     try
     {
