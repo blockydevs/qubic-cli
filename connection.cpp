@@ -92,7 +92,14 @@ QubicConnection::QubicConnection(const char* nodeIp, int nodePort)
     // receive handshake - exchange peer packets
     mHandshakeData.resize(sizeof(ExchangePublicPeers));
     uint8_t* data = mHandshakeData.data();
-    *((ExchangePublicPeers*)data) = receivePacketWithHeaderAs<ExchangePublicPeers>();   
+    *((ExchangePublicPeers*)data) = receivePacketWithHeaderAs<ExchangePublicPeers>();
+    // If node has no ComputorList or a self-generated ComputorList it will requestComputor upon tcp initialization
+    // Ignore this message if it is here
+    try{
+        *((RequestComputors*)data) = receivePacketWithHeaderAs<RequestComputors>();
+    }
+    catch(std::logic_error& e){
+    }
 }
 
 void QubicConnection::getHandshakeData(std::vector<uint8_t>& buffer)
@@ -257,7 +264,10 @@ template QEarnGetLockInfoPerEpoch_output QubicConnection::receivePacketWithHeade
 template QEarnGetUserLockedInfo_output QubicConnection::receivePacketWithHeaderAs<QEarnGetUserLockedInfo_output>();
 template QEarnGetStateOfRound_output QubicConnection::receivePacketWithHeaderAs<QEarnGetStateOfRound_output>();
 template QEarnGetUserLockStatus_output QubicConnection::receivePacketWithHeaderAs<QEarnGetUserLockStatus_output>();
+template QEarnGetStatsPerEpoch_output QubicConnection::receivePacketWithHeaderAs<QEarnGetStatsPerEpoch_output>();
 template QEarnGetEndedStatus_output QubicConnection::receivePacketWithHeaderAs<QEarnGetEndedStatus_output>();
+template QEarnGetBurnedAndBoostedStats_output QubicConnection::receivePacketWithHeaderAs<QEarnGetBurnedAndBoostedStats_output>();
+template QEarnGetBurnedAndBoostedStatsPerEpoch_output QubicConnection::receivePacketWithHeaderAs<QEarnGetBurnedAndBoostedStatsPerEpoch_output>();
 
 template ExchangePublicPeers QubicConnection::receivePacketAs<ExchangePublicPeers>();
 

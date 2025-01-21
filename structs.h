@@ -94,6 +94,9 @@ enum COMMAND
     QVAULT_SAVE_BANNED_ADDRESS = 83,
     QVAULT_SUBMIT_UNBANNED_ADDRESS = 84,
     QVAULT_SAVE_UNBANNED_ADDRESS = 85,
+    QEARN_GET_STATS_PER_EPOCH = 86,
+    QEARN_GET_BURNED_AND_BOOSTED_STATS = 87,
+    QEARN_GET_BURNED_AND_BOOSTED_STATS_PER_EPOCH = 88,
     TOTAL_COMMAND, // DO NOT CHANGE THIS
 };
 
@@ -471,6 +474,14 @@ typedef struct
         return EXCHANGE_PUBLIC_PEERS;
     }
 } ExchangePublicPeers;
+
+typedef struct
+{
+    static constexpr unsigned char type()
+    {
+        return REQUEST_COMPUTORS;
+    }
+} RequestComputors;
 
 struct RequestLog // Fetches log
 {

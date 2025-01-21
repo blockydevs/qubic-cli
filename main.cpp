@@ -206,12 +206,12 @@ int run(int argc, char* argv[])
         case UPLOAD_FILE:
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
-            uploadFile(g_nodeIp, g_nodePort, g_file_path, g_seed, g_offsetScheduledTick);
+            uploadFile(g_nodeIp, g_nodePort, g_file_path, g_seed, g_offsetScheduledTick, g_compress_tool);
             break;
         case DOWNLOAD_FILE:
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
-            downloadFile(g_nodeIp, g_nodePort, g_requestedTxId, g_file_path);
+            downloadFile(g_nodeIp, g_nodePort, g_requestedTxId, g_file_path, g_compress_tool);
             break;
         case DUMP_SPECTRUM_FILE:
             sanityFileExist(g_dump_binary_file_input);
@@ -400,6 +400,7 @@ int run(int argc, char* argv[])
         case CCF_GET_LATEST_TRANSFERS:
             sanityCheckNode(g_nodeIp, g_nodePort);
             ccfGetLatestTransfers(g_nodeIp, g_nodePort);
+            break;
         case QEARN_LOCK:
             sanityCheckNode(g_nodeIp, g_nodePort);
             sanityCheckSeed(g_seed);
@@ -429,6 +430,18 @@ int run(int argc, char* argv[])
         case QEARN_GET_UNLOCKING_STATUS:
             sanityCheckNode(g_nodeIp, g_nodePort);
             qearnGetEndedStatus(g_nodeIp, g_nodePort, g_requestedIdentity);
+            break;
+        case QEARN_GET_STATS_PER_EPOCH:
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            qearnGetStatsPerEpoch(g_nodeIp, g_nodePort, g_qearn_getstats_epoch);
+            break;
+        case QEARN_GET_BURNED_AND_BOOSTED_STATS:
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            qearnGetBurnedAndBoostedStats(g_nodeIp, g_nodePort);
+            break;
+        case QEARN_GET_BURNED_AND_BOOSTED_STATS_PER_EPOCH:
+            sanityCheckNode(g_nodeIp, g_nodePort);
+            qearnGetBurnedAndBoostedStatsPerEpoch(g_nodeIp, g_nodePort, g_qearn_getstats_epoch);
             break;
         case QVAULT_SUBMIT_AUTH_ADDRESS:
             sanityCheckNode(g_nodeIp, g_nodePort);

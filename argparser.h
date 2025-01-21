@@ -65,10 +65,10 @@ void print_help()
     printf("\t\tPrint a list of node ip from a seed node ip. Valid node ip/port are required.\n");
     printf("\t-gettxinfo <TX_ID>\n");
     printf("\t\tGet tx infomation, will print empty if there is no tx or invalid tx. valid node ip/port are required.\n");
-    printf("\t-uploadfile <FILE_PATH>\n");
-    printf("\t\tUpload a file to qubic network. valid node ip/port and seed are required.\n");
-    printf("\t-downloadfile <TX_ID> <FILE_PATH>\n");
-    printf("\t\tDownload a file to qubic network. valid node ip/port are required.\n");
+    printf("\t-uploadfile <FILE_PATH> [COMPRESS_TOOL]\n");
+    printf("\t\tUpload a file to qubic network. valid node ip/port and seed are required. optional COMPRESS_TOOL is used to compress the file (support: zip(Unix), tar(Win, Unix)) \n");
+    printf("\t-downloadfile <TX_ID> <FILE_PATH> [DECOMPRESS_TOOL]\n");
+    printf("\t\tDownload a file to qubic network. valid node ip/port are required. optional DECOMPRESS_TOOL is used to decompress the file (support: zip(Unix), tar(Win, Unix)) \n");
     printf("\t-checktxontick <TICK_NUMBER> <TX_ID>\n");
     printf("\t\tCheck if a transaction is included in a tick. valid node ip/port are required.\n");
     printf("\t-checktxonfile <TX_ID> <TICK_DATA_FILE>\n");
@@ -202,6 +202,12 @@ void print_help()
     printf("\t\tGet the status(binary number) that the user locked for 52 weeks.\n");
     printf("\t-qearngetunlockingstatus <IDENTITY>\n");
     printf("\t\tGet the unlocking history of the user.\n");
+    printf("\t-qearngetstatsperepoch <EPOCH>\n");
+    printf("\t\tGet the Stats(early unlocked amount, early unlocked percent) of the epoch <EPOCH> and Stats(total locked amount, average APY) of QEarn SC.\n");
+    printf("\t-qearngetburnedandboostedstats\n");
+    printf("\t\tGet the Stats(burned amount and average percent, boosted amount and average percent, rewarded amount and average percent in QEarn SC) of QEarn SC\n");
+    printf("\t-qearngetburnedandboostedstatsperepoch <EPOCH>\n");
+    printf("\t\tGet the Stats(burned amount and percent, boosted amount and percent, rewarded amount and percent in epoch <EPOCH>) of QEarn SC\n");
 
     printf("\n[QVAULT COMMANDS]\n");
     printf("\t-qvaultsubmitauthaddress <NEW_ADDRESS>\n");
@@ -473,6 +479,11 @@ void parseArgument(int argc, char** argv)
             g_cmd = UPLOAD_FILE;
             g_file_path = argv[i+1];
             i+=2;
+            if (i < argc)
+            {
+                g_compress_tool = argv[i];
+                i++;
+            }
             CHECK_OVER_PARAMETERS
             break;
         }
@@ -483,6 +494,11 @@ void parseArgument(int argc, char** argv)
             g_requestedTxId = argv[i+1];
             g_file_path = argv[i+2];
             i+=3;
+            if (i < argc)
+            {
+                g_compress_tool = argv[i];
+                i++;
+            }
             CHECK_OVER_PARAMETERS
             break;
         }
@@ -1114,6 +1130,32 @@ void parseArgument(int argc, char** argv)
             CHECK_NUMBER_OF_PARAMETERS(1)
             g_cmd = QEARN_GET_UNLOCKING_STATUS;
             g_requestedIdentity = argv[i+1];
+            i+=2;
+            CHECK_OVER_PARAMETERS
+            break;
+        }
+        if (strcmp(argv[i], "-qearngetstatsperepoch") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(1)
+            g_cmd = QEARN_GET_STATS_PER_EPOCH;
+            g_qearn_getstats_epoch = charToNumber(argv[i + 1]);
+            i+=2;
+            CHECK_OVER_PARAMETERS
+            break;
+        }
+        if (strcmp(argv[i], "-qearngetburnedandboostedstats") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(0)
+            g_cmd = QEARN_GET_BURNED_AND_BOOSTED_STATS;
+            i+=1;
+            CHECK_OVER_PARAMETERS
+            break;
+        }
+        if (strcmp(argv[i], "-qearngetburnedandboostedstatsperepoch") == 0)
+        {
+            CHECK_NUMBER_OF_PARAMETERS(1)
+            g_cmd = QEARN_GET_BURNED_AND_BOOSTED_STATS_PER_EPOCH;
+            g_qearn_getstats_epoch = charToNumber(argv[i + 1]);
             i+=2;
             CHECK_OVER_PARAMETERS
             break;
